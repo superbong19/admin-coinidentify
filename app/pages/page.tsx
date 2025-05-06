@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,9 @@ export default function Home() {
           <Link href="/pages/new">Create New Page</Link>
         </Button>
       </div>
-      <PageList />
+      <Suspense fallback={<div>Loading...</div>}>
+        <PageList />
+      </Suspense>
     </div>
   )
 }

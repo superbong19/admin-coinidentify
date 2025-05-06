@@ -1,11 +1,13 @@
 import "@/styles/globals.css"
+
 import { Metadata, Viewport } from "next"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
-import { SiteHeader } from "@/components/site-header"
-import { TailwindIndicator } from "@/components/tailwind-indicator"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/toaster"
+import { MainSidebar } from "@/components/main-sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
@@ -46,10 +48,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="relative flex min-h-screen flex-col">
-            <SiteHeader />
-            <div className="flex-1">{children}</div>
+            <div className="flex-1">
+              <SidebarProvider>
+                <MainSidebar />
+                <SidebarInset className="flex-1 overflow-auto">
+                  <div className="p-4 md:p-6">{children}</div>
+                </SidebarInset>
+              </SidebarProvider>
+            </div>
           </div>
-          <TailwindIndicator />
+          {/* <Toaster /> */}
         </ThemeProvider>
       </body>
     </html>
