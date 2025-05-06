@@ -230,7 +230,7 @@ export function PageList() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
       </Card>
@@ -263,7 +263,7 @@ export function PageList() {
       <div className="p-4 border-b">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search pages..."
@@ -273,7 +273,7 @@ export function PageList() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Filter className="size-4 text-muted-foreground" />
             <Select value={statusFilter} onValueChange={handleStatusChange}>
               <SelectTrigger className="w-[130px]">
                 <SelectValue placeholder="Filter by status" />
@@ -296,7 +296,7 @@ export function PageList() {
       {loading && pages.length === 0 ? (
         <CardContent className="py-10">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
       ) : pages.length === 0 ? (
@@ -351,7 +351,7 @@ export function PageList() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
+                            <MoreVertical className="size-4" />
                             <span className="sr-only">Open menu</span>
                           </Button>
                         </DropdownMenuTrigger>
@@ -361,7 +361,7 @@ export function PageList() {
                               href={`/pages/${page.id}`}
                               className="flex items-center"
                             >
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className="mr-2 size-4" />
                               View
                             </Link>
                           </DropdownMenuItem>
@@ -370,7 +370,7 @@ export function PageList() {
                               href={`/pages/${page.id}/edit`}
                               className="flex items-center"
                             >
-                              <Pencil className="mr-2 h-4 w-4" />
+                              <Pencil className="mr-2 size-4" />
                               Edit
                             </Link>
                           </DropdownMenuItem>
@@ -380,7 +380,7 @@ export function PageList() {
                                 onSelect={(e) => e.preventDefault()}
                                 className="flex items-center text-destructive focus:text-destructive"
                               >
-                                <Trash className="mr-2 h-4 w-4" />
+                                <Trash className="mr-2 size-4" />
                                 Delete
                               </DropdownMenuItem>
                             </AlertDialogTrigger>
@@ -432,7 +432,7 @@ export function PageList() {
                   onClick={handlePrevPage}
                   disabled={!prevCursor && currentCursor === null}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <ChevronLeft className="size-4 mr-1" />
                   Previous
                 </Button>
                 <Button
@@ -442,7 +442,7 @@ export function PageList() {
                   disabled={!nextCursor}
                 >
                   Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="size-4 ml-1" />
                 </Button>
               </div>
             </div>

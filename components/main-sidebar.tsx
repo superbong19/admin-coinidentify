@@ -26,7 +26,7 @@ export function MainSidebar() {
     <Sidebar>
       <SidebarHeader className="h-14 flex items-center px-4 border-b">
         <div className="flex items-center gap-2">
-          <CoinsIcon className="h-6 w-6" />
+          <CoinsIcon className="size-6" />
           <span className="font-semibold">Coin Collector Admin</span>
         </div>
         <div className="md:hidden ml-auto">
@@ -42,7 +42,7 @@ export function MainSidebar() {
               tooltip="Catalogs"
             >
               <Link href="/catalogs">
-                <LayoutGridIcon className="h-4 w-4" />
+                <LayoutGridIcon className="size-4" />
                 <span>Catalogs</span>
               </Link>
             </SidebarMenuButton>
@@ -54,7 +54,7 @@ export function MainSidebar() {
               tooltip="Office Series"
             >
               <Link href="/offical-series">
-                <LayoutGridIcon className="h-4 w-4" />
+                <LayoutGridIcon className="size-4" />
                 <span>Office Series</span>
               </Link>
             </SidebarMenuButton>
@@ -67,7 +67,7 @@ export function MainSidebar() {
               tooltip="Coins"
             >
               <Link href="/coins">
-                <CoinsIcon className="h-4 w-4" />
+                <CoinsIcon className="size-4" />
                 <span>Coins</span>
               </Link>
             </SidebarMenuButton>
@@ -79,7 +79,7 @@ export function MainSidebar() {
               tooltip="Transactions"
             >
               <Link href="/transactions">
-                <CoinsIcon className="h-4 w-4" />
+                <CoinsIcon className="size-4" />
                 <span>Transactions</span>
               </Link>
             </SidebarMenuButton>
@@ -91,7 +91,7 @@ export function MainSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Settings">
               <Link href="/settings">
-                <Settings className="h-4 w-4" />
+                <Settings className="size-4" />
                 <span>Settings</span>
               </Link>
             </SidebarMenuButton>

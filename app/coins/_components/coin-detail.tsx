@@ -93,7 +93,7 @@ export function CoinDetail({ id }: CoinDetailProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
       </Card>
@@ -244,13 +244,13 @@ export function CoinDetail({ id }: CoinDetailProps) {
             size="sm"
             onClick={() => router.push(`/coins/${id}/edit`)}
           >
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil className="size-4 mr-2" />
             Edit
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">
-                <Trash className="h-4 w-4 mr-2" />
+                <Trash className="size-4 mr-2" />
                 Delete
               </Button>
             </AlertDialogTrigger>

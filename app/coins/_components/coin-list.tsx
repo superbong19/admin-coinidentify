@@ -99,7 +99,7 @@ export function CoinList() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
       </Card>
@@ -212,7 +212,7 @@ export function CoinList() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
+                          <MoreVertical className="size-4" />
                           <span className="sr-only">Open menu</span>
                         </Button>
                       </DropdownMenuTrigger>
@@ -222,7 +222,7 @@ export function CoinList() {
                             href={`/coins/${coin.id}`}
                             className="flex items-center"
                           >
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="mr-2 size-4" />
                             View
                           </Link>
                         </DropdownMenuItem>
@@ -231,7 +231,7 @@ export function CoinList() {
                             href={`/coins/${coin.id}/edit`}
                             className="flex items-center"
                           >
-                            <Pencil className="mr-2 h-4 w-4" />
+                            <Pencil className="mr-2 size-4" />
                             Edit
                           </Link>
                         </DropdownMenuItem>
@@ -241,7 +241,7 @@ export function CoinList() {
                               onSelect={(e) => e.preventDefault()}
                               className="flex items-center text-destructive focus:text-destructive"
                             >
-                              <Trash className="mr-2 h-4 w-4" />
+                              <Trash className="mr-2 size-4" />
                               Delete
                             </DropdownMenuItem>
                           </AlertDialogTrigger>

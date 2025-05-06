@@ -189,7 +189,7 @@ export function CoinForm({ id }: CoinFormProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
       </Card>
@@ -767,7 +767,7 @@ export function CoinForm({ id }: CoinFormProps) {
               <Button type="submit" disabled={loading}>
                 {loading ? (
                   <>
-                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                    <div className="size-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
                     {id ? "Updating..." : "Creating..."}
                   </>
                 ) : (

@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,9 @@ export default function Home() {
           <Link href="/offical-seriess/new">Create New OfficalSeries</Link>
         </Button>
       </div>
-      <OfficalSeriesList />
+      <Suspense fallback={<div>Loading...</div>}>
+        <OfficalSeriesList />
+      </Suspense>
     </div>
   )
 }
