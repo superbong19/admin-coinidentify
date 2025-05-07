@@ -258,6 +258,7 @@ export function CoinList() {
                   <TableHead>Obverse</TableHead>
                   <TableHead>Reverse</TableHead>
                   <TableHead>Country</TableHead>
+                  <TableHead>ReferencePrice</TableHead>
                   <TableHead>Url</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
@@ -284,6 +285,9 @@ export function CoinList() {
                     </TableCell>
                     <TableCell className="font-medium">
                       {coin.country}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {coin.referencePrice}
                     </TableCell>
                     <TableCell className="font-medium">{coin.url}</TableCell>
                     <TableCell>
