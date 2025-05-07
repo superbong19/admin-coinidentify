@@ -108,13 +108,13 @@ export function OfficalSeriesList() {
       const config: any = {
         method: "get",
         maxBodyLength: Infinity,
-        url: "http://3.222.142.224:7799/api/offical-series",
+        url: `${process.env.NEXT_PUBLIC_API_URL}/offical-series`,
         headers: {
           accept: "application/json",
         },
         params: {
           limit: 100,
-          cursor,
+          ...(cursor && { cursor }),
         },
       }
       const response = await axios.request(config)

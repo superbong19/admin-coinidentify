@@ -51,7 +51,7 @@ export function CoinList() {
     const fetchCoins = async () => {
       try {
         const response = await axios.get(
-          "http://3.222.142.224:7799/api/coins?limit=10"
+          `${process.env.NEXT_PUBLIC_API_URL}/coins?limit=10`
         )
         const data = await response.data
         setCoins(data.data)

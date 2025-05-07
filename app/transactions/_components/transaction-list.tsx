@@ -108,13 +108,13 @@ export function TransactionList() {
       const config: any = {
         method: "get",
         maxBodyLength: Infinity,
-        url: "http://3.222.142.224:7799/api/transactions",
+        url: `${process.env.NEXT_PUBLIC_API_URL}/transactions`,
         headers: {
           accept: "application/json",
         },
         params: {
           limit: 100,
-          cursor,
+          ...(cursor && { cursor }),
         },
       }
       const response = await axios.request(config)
@@ -300,6 +300,8 @@ export function TransactionList() {
                 <TableRow>
                   <TableHead>Obverse</TableHead>
                   <TableHead>Reverse</TableHead>
+                  <TableHead>Url Identified</TableHead>
+                  <TableHead>Region</TableHead>
                   <TableHead>Upload At</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
@@ -324,6 +326,12 @@ export function TransactionList() {
                         height={100}
                       />
                       {/* {transaction.reverse} */}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {transaction.url}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {transaction.region}
                     </TableCell>
                     <TableCell className="font-medium">
                       {transaction.uploadedAt}
