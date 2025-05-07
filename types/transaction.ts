@@ -1,5 +1,5 @@
 export type Transaction = {
-  _id: string
+  id: string
   obverse: string
   reverse: string
   url: string

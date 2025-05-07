@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import axios from "axios"
+import { transactionsService } from "@/service/transaction-service"
 import {
   ChevronLeft,
   ChevronRight,
@@ -30,7 +30,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -59,7 +58,9 @@ import {
 export function TransactionList() {
   const router = useRouter()
 
-  const limit = 5 // Fixed transaction size
+  // Pagination settings
+  const [limit, setLimit] = useState(5)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Local state
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -67,85 +68,44 @@ export function TransactionList() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [nextCursor, setNextCursor] = useState<string | null>(null)
-  const [prevCursor, setPrevCursor] = useState<string | null>(null)
-  const [currentCursor, setCurrentCursor] = useState<string | null>("")
   const [totalItems, setTotalItems] = useState(0)
-  const [cursorStack, setCursorStack] = useState<string[]>([])
-  const [currentPosition, setCurrentPosition] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   // Debounce search to avoid too many API calls
   const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Update URL with current filters and cursor
-  const updateUrl = (search: string, status: string, cursor: string | null) => {
-    // const params = new URLSearchParams()
-    // if (search) params.set("search", search)
-    // if (status !== "all") params.set("status", status)
-    // if (cursor) params.set("cursor", cursor)
-
-    // const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`
-    // router.push(newUrl, { scroll: false })
-    fetchTransactions(search, status, currentCursor)
+  // Update URL with current filters and pagination
+  const updateUrl = (
+    search: string,
+    status: string,
+    page: number,
+    pageLimit: number
+  ) => {
+    fetchTransactions(search, status, page, pageLimit)
   }
 
-  // Fetch transactions with filters and cursor pagination
+  // Fetch transactions with filters and pagination
   const fetchTransactions = async (
     search: string,
     status: string,
-    cursor: string | null,
-    isReset = false
+    page: number,
+    pageLimit: number
   ) => {
     setLoading(true)
     try {
-      // Build query parameters
-      const params = new URLSearchParams()
-      if (search) params.append("search", search)
-      if (status !== "all") params.append("status", status)
-      if (cursor) params.append("cursor", cursor)
-      params.append("limit", limit.toString())
-
-      const config: any = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.NEXT_PUBLIC_API_URL}/transactions`,
-        headers: {
-          accept: "application/json",
-        },
-        params: {
-          limit: 100,
-          ...(cursor && { cursor }),
-        },
-      }
-      const response = await axios.request(config)
-
+      const response = await transactionsService.getTransactions(
+        page,
+        pageLimit,
+        search,
+        status
+      )
       const data = response.data
-      setTransactions(data.data)
-      // setPrevCursor(nextCursor)
-      setNextCursor(data.cursor)
-      setTotalItems(data.elements)
+      setTransactions(data)
+      setTotalItems(response.total || 0)
 
-      // Update cursor stack for navigation
-      if (isReset) {
-        // Reset cursor stack when filters change
-        if (data.meta.nextCursor) {
-          setCursorStack([data.meta.nextCursor])
-          setCurrentPosition(0)
-        } else {
-          setCursorStack([])
-          setCurrentPosition(0)
-        }
-      } else if (cursor && !cursorStack.includes(cursor)) {
-        // Add new cursor to stack if moving forward
-        const newStack = [...cursorStack]
-        if (currentPosition < newStack.length - 1) {
-          // If we're not at the end, truncate the stack
-          newStack.splice(currentPosition + 1)
-        }
-        newStack.push(cursor)
-        setCursorStack(newStack)
-        setCurrentPosition(newStack.length - 1)
-      }
+      // Calculate total pages
+      const calculatedTotalPages = Math.ceil((response.total || 0) / pageLimit)
+      setTotalPages(calculatedTotalPages)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
       toast({
@@ -161,42 +121,36 @@ export function TransactionList() {
   // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
-    setCurrentCursor(null) // Reset cursor on new search
+    setCurrentPage(1) // Reset to first page on new search
   }
 
   // Handle status filter change
   const handleStatusChange = (value: string) => {
-    setStatusFilter(value)
-    setCurrentCursor(null) // Reset cursor on new filter
+    if (value === "all") {
+      setStatusFilter("")
+    } else setStatusFilter(value)
+    setCurrentPage(1) // Reset to first page on new filter
   }
 
-  // Handle next transaction
-  const handleNextTransaction = () => {
-    if (nextCursor) {
-      setPrevCursor(currentCursor)
-      setCurrentCursor(nextCursor)
-      fetchTransactions(debouncedSearch, statusFilter, nextCursor)
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage)
     }
   }
 
-  // Handle previous transaction
-  const handlePrevTransaction = () => {
-    if (prevCursor) {
-      setCurrentCursor(prevCursor)
-      fetchTransactions(debouncedSearch, statusFilter, prevCursor)
-    } else {
-      // Go to first transaction
-      setCurrentCursor(null)
-      updateUrl(debouncedSearch, statusFilter, null)
-    }
+  // Handle limit change
+  const handleLimitChange = (value: string) => {
+    const newLimit = parseInt(value, 10)
+    setLimit(newLimit)
+    setCurrentPage(1) // Reset to first page when changing items per page
   }
 
-  // Effect to fetch data when filters or cursor change
+  // Effect to fetch data when filters or pagination change
   useEffect(() => {
-    const isReset = currentCursor === null
-    fetchTransactions(debouncedSearch, statusFilter, currentCursor, isReset)
-    updateUrl(debouncedSearch, statusFilter, currentCursor)
-  }, [debouncedSearch, statusFilter, currentCursor])
+    fetchTransactions(debouncedSearch, statusFilter, currentPage, limit)
+    updateUrl(debouncedSearch, statusFilter, currentPage, limit)
+  }, [debouncedSearch, statusFilter, currentPage, limit])
 
   if (loading && transactions.length === 0) {
     return (
@@ -220,7 +174,12 @@ export function TransactionList() {
               variant="outline"
               className="mt-4"
               onClick={() =>
-                fetchTransactions(debouncedSearch, statusFilter, currentCursor)
+                fetchTransactions(
+                  debouncedSearch,
+                  statusFilter,
+                  currentPage,
+                  limit
+                )
               }
             >
               Retry
@@ -252,9 +211,11 @@ export function TransactionList() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="US">US</SelectItem>
+                <SelectItem value="UK">UK</SelectItem>
+                <SelectItem value="France">France</SelectItem>
+                {/* Other country options */}
               </SelectContent>
             </Select>
           </div>
@@ -284,8 +245,8 @@ export function TransactionList() {
               onClick={() => {
                 setSearchQuery("")
                 setStatusFilter("all")
-                setCurrentCursor(null)
-                updateUrl("", "all", null)
+                setCurrentPage(1)
+                updateUrl("", "all", 1, limit)
               }}
             >
               Clear Filters
@@ -302,13 +263,13 @@ export function TransactionList() {
                   <TableHead>Reverse</TableHead>
                   <TableHead>Url Identified</TableHead>
                   <TableHead>Region</TableHead>
-                  <TableHead>Upload At</TableHead>
+                  <TableHead>Upload at</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.map((transaction) => (
-                  <TableRow key={transaction._id}>
+                  <TableRow key={transaction.id}>
                     <TableCell className="font-medium">
                       <Image
                         alt="Obverse image"
@@ -316,7 +277,6 @@ export function TransactionList() {
                         width={100}
                         height={100}
                       />
-                      {/* {transaction.obverse} */}
                     </TableCell>
                     <TableCell className="font-medium">
                       <Image
@@ -325,10 +285,15 @@ export function TransactionList() {
                         width={100}
                         height={100}
                       />
-                      {/* {transaction.reverse} */}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {transaction.url}
+                      <a
+                        href={transaction?.url}
+                        target="_blank"
+                        className="text-blue-400 underline"
+                      >
+                        {transaction?.url && <>Click</>}
+                      </a>
                     </TableCell>
                     <TableCell className="font-medium">
                       {transaction.region}
@@ -347,7 +312,7 @@ export function TransactionList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/transactions/${transaction._id}`}
+                              href={`/transactions/${transaction.id}`}
                               className="flex items-center"
                             >
                               <Eye className="mr-2 size-4" />
@@ -356,7 +321,7 @@ export function TransactionList() {
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/transactions/${transaction._id}/edit`}
+                              href={`/transactions/${transaction.id}/edit`}
                               className="flex items-center"
                             >
                               <Pencil className="mr-2 size-4" />
@@ -400,40 +365,83 @@ export function TransactionList() {
             </Table>
           </CardContent>
 
-          {(prevCursor !== null || nextCursor !== null) && (
-            <div className="p-4 border-t flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                {loading ? (
-                  <span>Loading...</span>
-                ) : (
-                  <span>
-                    Showing {transactions.length} items
-                    {nextCursor ? " (more available)" : " (end of results)"}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrevTransaction}
-                  disabled={!prevCursor && currentCursor === null}
-                >
-                  <ChevronLeft className="size-4 mr-1" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextTransaction}
-                  disabled={!nextCursor}
-                >
-                  Next
-                  <ChevronRight className="size-4 ml-1" />
-                </Button>
-              </div>
+          <div className="p-4 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Items per page:
+              </span>
+              <Select
+                value={limit.toString()}
+                onValueChange={handleLimitChange}
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue placeholder={limit.toString()} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1 || loading}
+              >
+                <ChevronLeft className="size-4 mr-1" />
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || loading}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-sm">Page</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={currentPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value, 10)
+                    if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                      handlePageChange(value)
+                    }
+                  }}
+                  className="w-14 h-8 text-center"
+                />
+                <span className="text-sm">of {totalPages}</span>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || loading}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages || loading}
+              >
+                Last
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          </div>
         </>
       )}
     </Card>

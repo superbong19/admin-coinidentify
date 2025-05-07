@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import axios from "axios"
+import { useRouter } from "next/navigation"
+import { catalogsService } from "@/service/catalog-service"
 import {
   ChevronLeft,
   ChevronRight,
@@ -29,7 +30,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -58,7 +58,9 @@ import {
 export function CatalogList() {
   const router = useRouter()
 
-  const limit = 5 // Fixed catalog size
+  // Pagination settings
+  const [limit, setLimit] = useState(5)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Local state
   const [catalogs, setCatalogs] = useState<Catalog[]>([])
@@ -66,85 +68,44 @@ export function CatalogList() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [nextCursor, setNextCursor] = useState<string | null>(null)
-  const [prevCursor, setPrevCursor] = useState<string | null>(null)
-  const [currentCursor, setCurrentCursor] = useState<string | null>("")
   const [totalItems, setTotalItems] = useState(0)
-  const [cursorStack, setCursorStack] = useState<string[]>([])
-  const [currentPosition, setCurrentPosition] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   // Debounce search to avoid too many API calls
   const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Update URL with current filters and cursor
-  const updateUrl = (search: string, status: string, cursor: string | null) => {
-    // const params = new URLSearchParams()
-    // if (search) params.set("search", search)
-    // if (status !== "all") params.set("status", status)
-    // if (cursor) params.set("cursor", cursor)
-
-    // const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`
-    // router.push(newUrl, { scroll: false })
-    fetchCatalogs(search, status, currentCursor)
+  // Update URL with current filters and pagination
+  const updateUrl = (
+    search: string,
+    status: string,
+    page: number,
+    pageLimit: number
+  ) => {
+    fetchCatalogs(search, status, page, pageLimit)
   }
 
-  // Fetch catalogs with filters and cursor pagination
+  // Fetch catalogs with filters and pagination
   const fetchCatalogs = async (
     search: string,
     status: string,
-    cursor: string | null,
-    isReset = false
+    page: number,
+    pageLimit: number
   ) => {
     setLoading(true)
     try {
-      // Build query parameters
-      const params = new URLSearchParams()
-      if (search) params.append("search", search)
-      if (status !== "all") params.append("status", status)
-      if (cursor) params.append("cursor", cursor)
-      params.append("limit", limit.toString())
-
-      const config: any = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.NEXT_PUBLIC_API_URL}/catalogs`,
-        headers: {
-          accept: "application/json",
-        },
-        params: {
-          limit: 100,
-          ...(cursor && { cursor }),
-        },
-      }
-      const response = await axios.request(config)
-
+      const response = await catalogsService.getCatalogs(
+        page,
+        pageLimit,
+        search,
+        status
+      )
       const data = response.data
-      setCatalogs(data.data)
-      // setPrevCursor(nextCursor)
-      setNextCursor(data.cursor)
-      setTotalItems(data.elements)
+      setCatalogs(data)
+      setTotalItems(response.total || 0)
 
-      // Update cursor stack for navigation
-      if (isReset) {
-        // Reset cursor stack when filters change
-        if (data.meta.nextCursor) {
-          setCursorStack([data.meta.nextCursor])
-          setCurrentPosition(0)
-        } else {
-          setCursorStack([])
-          setCurrentPosition(0)
-        }
-      } else if (cursor && !cursorStack.includes(cursor)) {
-        // Add new cursor to stack if moving forward
-        const newStack = [...cursorStack]
-        if (currentPosition < newStack.length - 1) {
-          // If we're not at the end, truncate the stack
-          newStack.splice(currentPosition + 1)
-        }
-        newStack.push(cursor)
-        setCursorStack(newStack)
-        setCurrentPosition(newStack.length - 1)
-      }
+      // Calculate total pages
+      const calculatedTotalPages = Math.ceil((response.total || 0) / pageLimit)
+      setTotalPages(calculatedTotalPages)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
       toast({
@@ -160,42 +121,36 @@ export function CatalogList() {
   // Handle search input change
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
-    setCurrentCursor(null) // Reset cursor on new search
+    setCurrentPage(1) // Reset to first page on new search
   }
 
   // Handle status filter change
   const handleStatusChange = (value: string) => {
-    setStatusFilter(value)
-    setCurrentCursor(null) // Reset cursor on new filter
+    if (value === "all") {
+      setStatusFilter("")
+    } else setStatusFilter(value)
+    setCurrentPage(1) // Reset to first page on new filter
   }
 
-  // Handle next catalog
-  const handleNextCatalog = () => {
-    if (nextCursor) {
-      setPrevCursor(currentCursor)
-      setCurrentCursor(nextCursor)
-      fetchCatalogs(debouncedSearch, statusFilter, nextCursor)
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage)
     }
   }
 
-  // Handle previous catalog
-  const handlePrevCatalog = () => {
-    if (prevCursor) {
-      setCurrentCursor(prevCursor)
-      fetchCatalogs(debouncedSearch, statusFilter, prevCursor)
-    } else {
-      // Go to first catalog
-      setCurrentCursor(null)
-      updateUrl(debouncedSearch, statusFilter, null)
-    }
+  // Handle limit change
+  const handleLimitChange = (value: string) => {
+    const newLimit = parseInt(value, 10)
+    setLimit(newLimit)
+    setCurrentPage(1) // Reset to first page when changing items per page
   }
 
-  // Effect to fetch data when filters or cursor change
+  // Effect to fetch data when filters or pagination change
   useEffect(() => {
-    const isReset = currentCursor === null
-    fetchCatalogs(debouncedSearch, statusFilter, currentCursor, isReset)
-    updateUrl(debouncedSearch, statusFilter, currentCursor)
-  }, [debouncedSearch, statusFilter, currentCursor])
+    fetchCatalogs(debouncedSearch, statusFilter, currentPage, limit)
+    updateUrl(debouncedSearch, statusFilter, currentPage, limit)
+  }, [debouncedSearch, statusFilter, currentPage, limit])
 
   if (loading && catalogs.length === 0) {
     return (
@@ -219,7 +174,7 @@ export function CatalogList() {
               variant="outline"
               className="mt-4"
               onClick={() =>
-                fetchCatalogs(debouncedSearch, statusFilter, currentCursor)
+                fetchCatalogs(debouncedSearch, statusFilter, currentPage, limit)
               }
             >
               Retry
@@ -251,9 +206,11 @@ export function CatalogList() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="US">US</SelectItem>
+                <SelectItem value="UK">UK</SelectItem>
+                <SelectItem value="France">France</SelectItem>
+                {/* Other country options */}
               </SelectContent>
             </Select>
           </div>
@@ -283,8 +240,8 @@ export function CatalogList() {
               onClick={() => {
                 setSearchQuery("")
                 setStatusFilter("all")
-                setCurrentCursor(null)
-                updateUrl("", "all", null)
+                setCurrentPage(1)
+                updateUrl("", "all", 1, limit)
               }}
             >
               Clear Filters
@@ -298,8 +255,10 @@ export function CatalogList() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Obverse</TableHead>
+                  <TableHead>Reverse</TableHead>
                   <TableHead>Country</TableHead>
-                  <TableHead>Coin count</TableHead>
+                  <TableHead>CoinCount</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -308,6 +267,22 @@ export function CatalogList() {
                   <TableRow key={catalog.id}>
                     <TableCell className="font-medium">
                       {catalog.name}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Image
+                        alt="Obverse image"
+                        src={catalog.frontImage}
+                        width={100}
+                        height={100}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Image
+                        alt="Reverse image"
+                        src={catalog.backImage}
+                        width={100}
+                        height={100}
+                      />
                     </TableCell>
                     <TableCell className="font-medium">
                       {catalog.country}
@@ -379,40 +354,83 @@ export function CatalogList() {
             </Table>
           </CardContent>
 
-          {(prevCursor !== null || nextCursor !== null) && (
-            <div className="p-4 border-t flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                {loading ? (
-                  <span>Loading...</span>
-                ) : (
-                  <span>
-                    Showing {catalogs.length} items
-                    {nextCursor ? " (more available)" : " (end of results)"}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrevCatalog}
-                  disabled={!prevCursor && currentCursor === null}
-                >
-                  <ChevronLeft className="size-4 mr-1" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextCatalog}
-                  disabled={!nextCursor}
-                >
-                  Next
-                  <ChevronRight className="size-4 ml-1" />
-                </Button>
-              </div>
+          <div className="p-4 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Items per page:
+              </span>
+              <Select
+                value={limit.toString()}
+                onValueChange={handleLimitChange}
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue placeholder={limit.toString()} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1 || loading}
+              >
+                <ChevronLeft className="size-4 mr-1" />
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || loading}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-sm">Page</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={currentPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value, 10)
+                    if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                      handlePageChange(value)
+                    }
+                  }}
+                  className="w-14 h-8 text-center"
+                />
+                <span className="text-sm">of {totalPages}</span>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || loading}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages || loading}
+              >
+                Last
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          </div>
         </>
       )}
     </Card>
