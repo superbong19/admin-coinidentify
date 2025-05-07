@@ -1,5 +1,6 @@
 export type BaseListResponse<T> = {
-  data: T
-  cursor: string
+  data: T[]
+  hasMore: boolean
   element: number
+  total: number
 }

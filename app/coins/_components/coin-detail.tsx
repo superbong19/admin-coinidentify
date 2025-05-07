@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { coinsService } from "@/service/coin-service"
 import { Pencil, Trash } from "lucide-react"
 
 import { Coin } from "@/types/coin"
@@ -41,12 +42,8 @@ export function CoinDetail({ id }: CoinDetailProps) {
   useEffect(() => {
     const fetchCoin = async () => {
       try {
-        const response = await fetch(`/api/coins/${id}`)
-        if (!response.ok) {
-          throw new Error("Failed to fetch coin")
-        }
-        const data = await response.json()
-        setCoin(data)
+        const response = await coinsService.getCoinById(id)
+        setCoin(response)
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred")
         toast({
@@ -62,31 +59,7 @@ export function CoinDetail({ id }: CoinDetailProps) {
     fetchCoin()
   }, [id])
 
-  const handleDelete = async () => {
-    try {
-      const response = await fetch(`/api/coins/${id}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to delete coin")
-      }
-
-      toast({
-        title: "Coin deleted",
-        description: "The coin has been successfully deleted.",
-      })
-
-      router.push("/")
-      router.refresh()
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete coin. Please try again.",
-      })
-    }
-  }
+  const handleDelete = async () => {}
 
   if (loading) {
     return (

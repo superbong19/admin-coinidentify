@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { coinsService } from "@/service/coin-service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -13,7 +14,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -87,13 +87,8 @@ export function CoinForm({ id }: CoinFormProps) {
     if (id) {
       const fetchCoin = async () => {
         try {
-          const response = await fetch(`/api/coins/${id}`)
-          console.log(response)
+          const coin: Coin = await coinsService.getCoinById(id)
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch coin")
-          }
-          const coin: Coin = await response.json()
           form.reset({
             id: coin.id,
             name: coin.name,
@@ -151,28 +146,15 @@ export function CoinForm({ id }: CoinFormProps) {
     setLoading(true)
     values.rarity = values.rarity ? Number(values.rarity) : null
     try {
-      const url = id ? `/api/coins/${id}` : "/api/coins"
-      const method = id ? "PUT" : "POST"
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${id ? "update" : "create"} coin`)
-      }
+      await coinsService.updateCoin(id ?? "", values)
 
       toast({
         title: `Coin ${id ? "updated" : "created"}`,
         description: `The coin has been successfully ${id ? "updated" : "created"}.`,
       })
 
-      router.push("/")
-      router.refresh()
+      // router.push("/coins")
+      // router.refresh()
     } catch (error) {
       toast({
         variant: "destructive",
