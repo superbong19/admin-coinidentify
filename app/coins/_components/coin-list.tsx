@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { coinFilterList } from "@/constants/list-filter"
 import { coinsService } from "@/service/coin-service"
 import {
   ChevronLeft,
@@ -206,10 +207,9 @@ export function CoinList() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="US">US</SelectItem>
-                <SelectItem value="UK">UK</SelectItem>
-                <SelectItem value="France">France</SelectItem>
+                {coinFilterList.map((country) => (
+                  <SelectItem value={country}>{country}</SelectItem>
+                ))}
                 {/* Other country options */}
               </SelectContent>
             </Select>

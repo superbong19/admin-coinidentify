@@ -213,8 +213,8 @@ export function TransactionList() {
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="US">US</SelectItem>
-                <SelectItem value="UK">UK</SelectItem>
-                <SelectItem value="France">France</SelectItem>
+                <SelectItem value="EU">UK</SelectItem>
+                <SelectItem value="AP">AP</SelectItem>
                 {/* Other country options */}
               </SelectContent>
             </Select>
