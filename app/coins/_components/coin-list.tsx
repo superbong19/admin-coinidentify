@@ -298,7 +298,10 @@ export function CoinList({
                     </TableCell>
                     <TableCell className="font-medium">
                       <Link
-                        href={coin.url}
+                        href={
+                          coin.url ||
+                          "https://s3.amazonaws.com/collectors-society-production/Coins/Census/Categories/placeholder.png"
+                        }
                         target="_blank"
                         className="text-blue-500 hover:underline"
                       >

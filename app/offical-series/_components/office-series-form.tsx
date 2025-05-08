@@ -29,6 +29,7 @@ const formSchema = z.object({
   startYear: z.string().optional(),
   endYear: z.string().optional(),
   country: z.string().optional(),
+  coinCount: z.number().optional(),
 })
 type FormValues = z.infer<typeof formSchema>
 
@@ -61,6 +62,7 @@ export function OfficalSeriesForm({ id }: OfficalSeriesFormProps) {
             startYear: officalSeries.startYear,
             endYear: officalSeries.endYear,
             country: officalSeries.country,
+            coinCount: officalSeries.coinCount,
           })
         } catch (error) {
           toast.error("Failed to load offical-series data. Please try again.")
@@ -189,6 +191,21 @@ export function OfficalSeriesForm({ id }: OfficalSeriesFormProps) {
                   <FormLabel>End Year</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter end year" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Coin Count */}
+            <FormField
+              control={form.control}
+              name="coinCount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Coin Count</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter coin count" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -259,6 +259,7 @@ export function OfficalSeriesList() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Id</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Obverse</TableHead>
                   <TableHead>Background Image</TableHead>
@@ -270,6 +271,9 @@ export function OfficalSeriesList() {
               <TableBody>
                 {officalSeries.map((officalSeries) => (
                   <TableRow key={officalSeries.id}>
+                    <TableCell className="font-medium">
+                      {officalSeries.id}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {officalSeries.name}
                     </TableCell>
