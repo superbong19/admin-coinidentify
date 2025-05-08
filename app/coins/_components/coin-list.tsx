@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { coinFilterList } from "@/constants/list-filter"
 import { coinsService } from "@/service/coin-service"
 import {
@@ -56,9 +56,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function CoinList() {
+export function CoinList({
+  catalogId,
+  officalSeriesId,
+}: {
+  catalogId?: string
+  officalSeriesId?: string
+}) {
   const router = useRouter()
-
   // Pagination settings
   const [limit, setLimit] = useState(5)
   const [currentPage, setCurrentPage] = useState(1)
@@ -94,12 +99,14 @@ export function CoinList() {
   ) => {
     setLoading(true)
     try {
-      const response = await coinsService.getCoins(
+      const response = await coinsService.getCoins({
         page,
-        pageLimit,
-        search,
-        status
-      )
+        limit: pageLimit,
+        name: search,
+        country: status,
+        catalogId,
+        officalSeriesId,
+      })
       const data = response.data
       setCoins(data)
       setTotalItems(response.total || 0)
@@ -289,7 +296,15 @@ export function CoinList() {
                     <TableCell className="font-medium">
                       {coin.referencePrice}
                     </TableCell>
-                    <TableCell className="font-medium">{coin.url}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={coin.url}
+                        target="_blank"
+                        className="text-blue-500 hover:underline"
+                      >
+                        Click
+                      </Link>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

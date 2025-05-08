@@ -13,7 +13,7 @@ export default function EditCatalog({ params }: { params: { id: string } }) {
             <Link href={`/catalogs/${params.id}`}>View Catalog</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/">Back to Catalogs</Link>
+            <Link href="/catalogs">Back to Catalogs</Link>
           </Button>
         </div>
       </div>

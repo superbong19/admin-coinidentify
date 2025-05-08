@@ -24,9 +24,7 @@ export const officalSeriesService = {
   },
 
   async getOfficalSeriesById(officalSeriesId: string): Promise<OfficalSeries> {
-    const res = await axiosClient.get(
-      `offical-series/${officalSeriesId}/details`
-    )
+    const res = await axiosClient.get(`offical-series/${officalSeriesId}`)
     return res.data
   },
 

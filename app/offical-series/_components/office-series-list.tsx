@@ -63,7 +63,7 @@ export function OfficalSeriesList() {
   const [currentPage, setCurrentPage] = useState(1)
 
   // Local state
-  const [officalSeriess, setOfficalSeriess] = useState<OfficalSeries[]>([])
+  const [officalSeries, setOfficalSeriess] = useState<OfficalSeries[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -84,7 +84,7 @@ export function OfficalSeriesList() {
     fetchOfficalSeriess(search, status, page, pageLimit)
   }
 
-  // Fetch officalSeriess with filters and pagination
+  // Fetch officalSeries with filters and pagination
   const fetchOfficalSeriess = async (
     search: string,
     status: string,
@@ -111,7 +111,7 @@ export function OfficalSeriesList() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load officalSeriess. Please try again.",
+        description: "Failed to load officalSeries. Please try again.",
       })
     } finally {
       setLoading(false)
@@ -152,7 +152,7 @@ export function OfficalSeriesList() {
     updateUrl(debouncedSearch, statusFilter, currentPage, limit)
   }, [debouncedSearch, statusFilter, currentPage, limit])
 
-  if (loading && officalSeriess.length === 0) {
+  if (loading && officalSeries.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -164,7 +164,7 @@ export function OfficalSeriesList() {
     )
   }
 
-  if (error && officalSeriess.length === 0) {
+  if (error && officalSeries.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -198,7 +198,7 @@ export function OfficalSeriesList() {
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search officalSeriess..."
+              placeholder="Search officalSeries..."
               className="pl-8 w-full"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -222,22 +222,22 @@ export function OfficalSeriesList() {
         </div>
         {totalItems > 0 && (
           <div className="mt-2 text-sm text-muted-foreground">
-            Showing {officalSeriess.length} of {totalItems} officalSeriess
+            Showing {officalSeries.length} of {totalItems} officalSeries
           </div>
         )}
       </div>
 
-      {loading && officalSeriess.length === 0 ? (
+      {loading && officalSeries.length === 0 ? (
         <CardContent className="py-10">
           <div className="flex justify-center">
             <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         </CardContent>
-      ) : officalSeriess.length === 0 ? (
+      ) : officalSeries.length === 0 ? (
         <CardContent className="py-10">
           <div className="text-center">
             <p className="text-muted-foreground">
-              No officalSeriess match your search criteria.
+              No officalSeries match your search criteria.
             </p>
             <Button
               variant="outline"
@@ -268,7 +268,7 @@ export function OfficalSeriesList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {officalSeriess.map((officalSeries) => (
+                {officalSeries.map((officalSeries) => (
                   <TableRow key={officalSeries.id}>
                     <TableCell className="font-medium">
                       {officalSeries.name}
@@ -306,7 +306,7 @@ export function OfficalSeriesList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/officalSeriess/${officalSeries.id}`}
+                              href={`/offical-series/${officalSeries.id}?name=${officalSeries.name}`}
                               className="flex items-center"
                             >
                               <Eye className="mr-2 size-4" />
@@ -315,7 +315,7 @@ export function OfficalSeriesList() {
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/officalSeriess/${officalSeries.id}/edit`}
+                              href={`/offical-series/${officalSeries.id}/edit`}
                               className="flex items-center"
                             >
                               <Pencil className="mr-2 size-4" />

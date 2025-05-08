@@ -14,12 +14,10 @@ export default function EditOfficalSeries({
         <h1 className="text-3xl font-bold">Edit OfficalSeries</h1>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link href={`/offical-seriess/${params.id}`}>
-              View OfficalSeries
-            </Link>
+            <Link href={`/catalogs/${params.id}`}>View OfficalSeries</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/">Back to OfficalSeriess</Link>
+            <Link href="/catalogs">Back to OfficalSeriess</Link>
           </Button>
         </div>
       </div>

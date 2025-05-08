@@ -41,7 +41,7 @@ export function OfficalSeriesDetail({ id }: OfficalSeriesDetailProps) {
   useEffect(() => {
     const fetchOfficalSeries = async () => {
       try {
-        const response = await fetch(`/api/officalSeriess/${id}`)
+        const response = await fetch(`/api/offical-series/${id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch officalSeries")
         }
@@ -65,7 +65,7 @@ export function OfficalSeriesDetail({ id }: OfficalSeriesDetailProps) {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/officalSeriess/${id}`, {
+      const response = await fetch(`/api/offical-series/${id}`, {
         method: "DELETE",
       })
 
@@ -110,7 +110,7 @@ export function OfficalSeriesDetail({ id }: OfficalSeriesDetailProps) {
             <Button
               variant="outline"
               className="mt-4"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/offical-series")}
             >
               Back to OfficalSeriess
             </Button>
@@ -150,7 +150,7 @@ export function OfficalSeriesDetail({ id }: OfficalSeriesDetailProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/officalSeriess/${id}/edit`)}
+            onClick={() => router.push(`/offical-series/${id}/edit`)}
           >
             <Pencil className="size-4 mr-2" />
             Edit

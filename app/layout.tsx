@@ -1,12 +1,12 @@
 import "@/styles/globals.css"
 
 import { Metadata, Viewport } from "next"
+import { Toaster } from "react-hot-toast"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Toaster } from "@/components/ui/toaster"
 import { MainSidebar } from "@/components/main-sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 
@@ -46,6 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontSans.variable
         )}
       >
+        <Toaster />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="relative flex min-h-screen flex-col">
             <div className="flex-1">

@@ -9,7 +9,7 @@ export default function NewOfficalSeries() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Create New OfficalSeries</h1>
         <Button variant="outline" asChild>
-          <Link href="/">Back to OfficalSeriess</Link>
+          <Link href="/offical-series">Back to OfficalSeries</Link>
         </Button>
       </div>
       <OfficalSeriesForm />

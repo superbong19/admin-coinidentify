@@ -2,39 +2,34 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { officalSeriesService } from "@/service/offical-series-service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import * as z from "zod"
 
 import { OfficalSeries } from "@/types/offical-series"
-import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 
 const formSchema = z.object({
-  name: z.string().min(1, "Title is required"),
-  country: z.string().min(1, "Content is required"),
-  coinCount: z.number(),
+  name: z.string().optional(),
+  imgBackground: z.string().optional(),
+  frontImage: z.string().optional(),
+  description: z.string().optional(),
+  startYear: z.string().optional(),
+  endYear: z.string().optional(),
+  country: z.string().optional(),
 })
-
 type FormValues = z.infer<typeof formSchema>
 
 interface OfficalSeriesFormProps {
@@ -48,33 +43,27 @@ export function OfficalSeriesForm({ id }: OfficalSeriesFormProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      country: "",
-      coinCount: 0,
-    },
+    defaultValues: {},
   })
 
   useEffect(() => {
     if (id) {
       const fetchOfficalSeries = async () => {
         try {
-          const response = await fetch(`/api/offical-series/${id}`)
-          if (!response.ok) {
-            throw new Error("Failed to fetch officalSeries")
-          }
-          const officalSeries: OfficalSeries = await response.json()
+          const officalSeries: OfficalSeries =
+            await officalSeriesService.getOfficalSeriesById(id)
+
           form.reset({
             name: officalSeries.name,
+            frontImage: officalSeries.frontImage,
+            imgBackground: officalSeries.imgBackground,
+            description: officalSeries.description,
+            startYear: officalSeries.startYear,
+            endYear: officalSeries.endYear,
             country: officalSeries.country,
-            coinCount: officalSeries.coinCount,
           })
         } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load officalSeries data. Please try again.",
-          })
+          toast.error("Failed to load offical-series data. Please try again.")
         } finally {
           setInitialLoading(false)
         }
@@ -86,35 +75,24 @@ export function OfficalSeriesForm({ id }: OfficalSeriesFormProps) {
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true)
+    if (!id) {
+      toast.error("OfficalSeries ID is required for update.")
+      return
+    }
+
     try {
-      const url = id ? `/api/offical-series/${id}` : "/api/offical-series"
-      const method = id ? "PUT" : "POST"
+      await officalSeriesService.updateOfficalSeries(id, values)
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
+      toast.success(
+        `The offical-series has been successfully ${id ? "updated" : "created"}.`
+      )
 
-      if (!response.ok) {
-        throw new Error(`Failed to ${id ? "update" : "create"} officalSeries`)
-      }
-
-      toast({
-        title: `OfficalSeries ${id ? "updated" : "created"}`,
-        description: `The officalSeries has been successfully ${id ? "updated" : "created"}.`,
-      })
-
-      router.push("/")
-      router.refresh()
+      // router.push("/offical-seriess")
+      // router.refresh()
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to ${id ? "update" : "create"} officalSeries. Please try again.`,
-      })
+      toast.error(
+        `Failed to ${id ? "update" : "create"} offical-series. Please try again.`
+      )
     } finally {
       setLoading(false)
     }
@@ -137,69 +115,116 @@ export function OfficalSeriesForm({ id }: OfficalSeriesFormProps) {
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Name */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter officalSeries title" {...field} />
+                    <Input placeholder="Enter offical-series name" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    The title of your officalSeries as it will appear to users.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter offical-series description"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Country */}
             <FormField
               control={form.control}
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Enter officalSeries content"
-                      className="min-h-[200px]"
+                    <Input
+                      placeholder="Enter offical-series country"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    The main content of your officalSeries.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Start Year */}
             <FormField
               control={form.control}
-              name="coinCount"
+              name="startYear"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={String(field.value)}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Set the current status of your officalSeries.
-                  </FormDescription>
+                  <FormLabel>Start Year</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter start year" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {/* End Year */}
+            <FormField
+              control={form.control}
+              name="endYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Year</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter end year" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Image URLs */}
+            <FormField
+              control={form.control}
+              name="frontImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Front Images</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter image URLs" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="imgBackground"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Background Images</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter image URLs" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Submit buttons */}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

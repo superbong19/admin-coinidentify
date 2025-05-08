@@ -301,7 +301,7 @@ export function CatalogList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/catalogs/${catalog.id}`}
+                              href={`/catalogs/${catalog.id}?name=${catalog.name}`}
                               className="flex items-center"
                             >
                               <Eye className="mr-2 size-4" />

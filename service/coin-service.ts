@@ -6,18 +6,29 @@ import axiosClient from "./axios-client"
 export type CoinResponse = BaseListResponse<Coin>
 
 export const coinsService = {
-  async getCoins(
-    page: number,
-    limit: number,
-    name?: string,
+  async getCoins({
+    page = 1,
+    limit = 10,
+    name,
+    country,
+    catalogId,
+    officalSeriesId,
+  }: {
+    page?: number
+    limit?: number
+    name?: string
     country?: string
-  ): Promise<CoinResponse> {
+    catalogId?: string
+    officalSeriesId?: string
+  }): Promise<CoinResponse> {
     const res = await axiosClient.get("admin/coins", {
       params: {
         page,
         limit,
         name,
         country,
+        catalogId,
+        officalSeriesId,
       },
     })
     return res.data

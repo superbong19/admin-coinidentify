@@ -109,7 +109,7 @@ export function CatalogDetail({ id }: CatalogDetailProps) {
             <Button
               variant="outline"
               className="mt-4"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/catalogs")}
             >
               Back to Catalogs
             </Button>

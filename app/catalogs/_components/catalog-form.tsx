@@ -2,39 +2,34 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { catalogsService } from "@/service/catalog-service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import * as z from "zod"
 
 import type { Catalog } from "@/types/catalog"
-import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 
 const formSchema = z.object({
-  name: z.string().min(1, "Title is required"),
-  country: z.string().min(1, "Content is required"),
-  coinCount: z.number(),
+  name: z.string().optional(),
+  backImage: z.string().optional(),
+  frontImage: z.string().optional(),
+  description: z.string().optional(),
+  startYear: z.string().optional(),
+  endYear: z.string().optional(),
+  country: z.string().optional(),
 })
-
 type FormValues = z.infer<typeof formSchema>
 
 interface CatalogFormProps {
@@ -48,33 +43,26 @@ export function CatalogForm({ id }: CatalogFormProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      country: "",
-      coinCount: 0,
-    },
+    defaultValues: {},
   })
 
   useEffect(() => {
     if (id) {
       const fetchCatalog = async () => {
         try {
-          const response = await fetch(`/api/catalogs/${id}`)
-          if (!response.ok) {
-            throw new Error("Failed to fetch catalog")
-          }
-          const catalog: Catalog = await response.json()
+          const catalog: Catalog = await catalogsService.getCatalogById(id)
+
           form.reset({
             name: catalog.name,
+            frontImage: catalog.frontImage,
+            backImage: catalog.backImage,
+            description: catalog.description,
+            startYear: catalog.startYear,
+            endYear: catalog.endYear,
             country: catalog.country,
-            coinCount: catalog.coinCount,
           })
         } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load catalog data. Please try again.",
-          })
+          toast.error("Failed to load catalog data. Please try again.")
         } finally {
           setInitialLoading(false)
         }
@@ -86,35 +74,24 @@ export function CatalogForm({ id }: CatalogFormProps) {
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true)
+    if (!id) {
+      toast.error("Catalog ID is required for update.")
+      return
+    }
+
     try {
-      const url = id ? `/api/catalogs/${id}` : "/api/catalogs"
-      const method = id ? "PUT" : "POST"
+      await catalogsService.updateCatalog(id, values)
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
+      toast.success(
+        `The catalog has been successfully ${id ? "updated" : "created"}.`
+      )
 
-      if (!response.ok) {
-        throw new Error(`Failed to ${id ? "update" : "create"} catalog`)
-      }
-
-      toast({
-        title: `Catalog ${id ? "updated" : "created"}`,
-        description: `The catalog has been successfully ${id ? "updated" : "created"}.`,
-      })
-
-      router.push("/")
-      router.refresh()
+      // router.push("/catalogs")
+      // router.refresh()
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to ${id ? "update" : "create"} catalog. Please try again.`,
-      })
+      toast.error(
+        `Failed to ${id ? "update" : "create"} catalog. Please try again.`
+      )
     } finally {
       setLoading(false)
     }
@@ -137,69 +114,110 @@ export function CatalogForm({ id }: CatalogFormProps) {
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Name */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter catalog title" {...field} />
+                    <Input placeholder="Enter catalog name" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    The title of your catalog as it will appear to users.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter catalog description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Country */}
             <FormField
               control={form.control}
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Enter catalog content"
-                      className="min-h-[200px]"
-                      {...field}
-                    />
+                    <Input placeholder="Enter catalog country" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    The main content of your catalog.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Start Year */}
             <FormField
               control={form.control}
-              name="coinCount"
+              name="startYear"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={String(field.value)}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Set the current status of your catalog.
-                  </FormDescription>
+                  <FormLabel>Start Year</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter start year" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {/* End Year */}
+            <FormField
+              control={form.control}
+              name="endYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Year</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter end year" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Image URLs */}
+            <FormField
+              control={form.control}
+              name="frontImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Front Images</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter image URLs" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="backImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Back Images</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter image URLs" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Submit buttons */}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

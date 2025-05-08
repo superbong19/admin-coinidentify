@@ -24,7 +24,7 @@ export const catalogsService = {
   },
 
   async getCatalogById(catalogId: string): Promise<Catalog> {
-    const res = await axiosClient.get(`catalogs/${catalogId}/details`)
+    const res = await axiosClient.get(`catalogs/${catalogId}`)
     return res.data
   },
 
@@ -32,10 +32,7 @@ export const catalogsService = {
     catalogId: string,
     catalogData: Partial<Catalog>
   ): Promise<Catalog> {
-    const res = await axiosClient.put(
-      `admin/catalogs/${catalogId}`,
-      catalogData
-    )
+    const res = await axiosClient.put(`catalogs/${catalogId}`, catalogData)
     return res.data
   },
 }
