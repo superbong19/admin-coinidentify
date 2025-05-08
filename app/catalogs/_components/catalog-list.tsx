@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import {
   Table,
   TableBody,
@@ -115,6 +116,17 @@ export function CatalogList() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleChangePublicOfficalSeries = async (
+    id: string,
+    status: boolean
+  ) => {
+    try {
+      await catalogsService.updateCatalog(id, { isPublic: status })
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -259,6 +271,7 @@ export function CatalogList() {
                   <TableHead>Reverse</TableHead>
                   <TableHead>Country</TableHead>
                   <TableHead>CoinCount</TableHead>
+                  <TableHead>IsPublic</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -289,6 +302,14 @@ export function CatalogList() {
                     </TableCell>
                     <TableCell className="font-medium">
                       {catalog.coinCount}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Switch
+                        defaultChecked={catalog.isPublic}
+                        onCheckedChange={(value) => {
+                          handleChangePublicOfficalSeries(catalog.id, value)
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

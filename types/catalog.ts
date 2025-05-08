@@ -10,4 +10,5 @@ export interface Catalog {
   frontImage: string
   endYear: string
   startYear: string
+  isPublic: boolean
 }
