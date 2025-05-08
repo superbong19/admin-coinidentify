@@ -10,4 +10,5 @@ export interface OfficalSeries {
   frontImage: string
   endYear: string
   startYear: string
+  isPublic: boolean
 }

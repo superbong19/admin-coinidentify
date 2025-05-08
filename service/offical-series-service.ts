@@ -33,7 +33,7 @@ export const officalSeriesService = {
     officalSeriesData: Partial<OfficalSeries>
   ): Promise<OfficalSeries> {
     const res = await axiosClient.put(
-      `admin/offical-series/${officalSeriesId}`,
+      `offical-series/${officalSeriesId}`,
       officalSeriesData
     )
     return res.data

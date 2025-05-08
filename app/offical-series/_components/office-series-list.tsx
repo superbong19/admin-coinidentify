@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import {
   Table,
   TableBody,
@@ -115,6 +116,16 @@ export function OfficalSeriesList() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+  const handleChangePublicOfficalSeries = async (
+    id: string,
+    status: boolean
+  ) => {
+    try {
+      await officalSeriesService.updateOfficalSeries(id, { isPublic: status })
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -265,6 +276,7 @@ export function OfficalSeriesList() {
                   <TableHead>Background Image</TableHead>
                   <TableHead>Country</TableHead>
                   <TableHead>CoinCount</TableHead>
+                  <TableHead>isPublic</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -298,6 +310,17 @@ export function OfficalSeriesList() {
                     </TableCell>
                     <TableCell className="font-medium">
                       {officalSeries.coinCount}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Switch
+                        defaultChecked={officalSeries.isPublic}
+                        onCheckedChange={(value) => {
+                          handleChangePublicOfficalSeries(
+                            officalSeries.id,
+                            value
+                          )
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
