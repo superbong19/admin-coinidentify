@@ -15,10 +15,10 @@ import {
   Search,
   Trash,
 } from "lucide-react"
+import toast from "react-hot-toast"
 
 import { OfficalSeries } from "@/types/offical-series"
 import { useDebounce } from "@/hooks/use-debounce"
-import { toast } from "@/hooks/use-toast"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,6 +85,16 @@ export function OfficalSeriesList() {
     fetchOfficalSeriess(search, status, page, pageLimit)
   }
 
+  const handleDeleteOfficalSeries = async (id: string) => {
+    try {
+      await officalSeriesService.deleteOfficalSeries(id)
+      toast.success("Delete succcesfuly")
+      fetchOfficalSeriess(debouncedSearch, statusFilter, currentPage, limit)
+    } catch (error) {
+      toast.error("Error")
+    }
+  }
+
   // Fetch officalSeries with filters and pagination
   const fetchOfficalSeriess = async (
     search: string,
@@ -109,11 +119,7 @@ export function OfficalSeriesList() {
       setTotalPages(calculatedTotalPages)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load officalSeries. Please try again.",
-      })
+      toast.success("Failed to load officalSeries. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -160,7 +166,7 @@ export function OfficalSeriesList() {
   // Effect to fetch data when filters or pagination change
   useEffect(() => {
     fetchOfficalSeriess(debouncedSearch, statusFilter, currentPage, limit)
-    updateUrl(debouncedSearch, statusFilter, currentPage, limit)
+    // updateUrl(debouncedSearch, statusFilter, currentPage, limit)
   }, [debouncedSearch, statusFilter, currentPage, limit])
 
   if (loading && officalSeries.length === 0) {
@@ -371,7 +377,11 @@ export function OfficalSeriesList() {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => {}}>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeleteOfficalSeries(officalSeries.id)
+                                  }
+                                >
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>

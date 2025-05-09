@@ -38,4 +38,8 @@ export const officalSeriesService = {
     )
     return res.data
   },
+
+  async deleteOfficalSeries(officalSeriesId: string): Promise<void> {
+    await axiosClient.delete(`admin/offical-series/${officalSeriesId}`)
+  },
 }
